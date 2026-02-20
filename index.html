@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 
-<body>
+<body onload="loadPokemon()">
     <header>
         <div class="logo">
             <h1>Pokédex</h1>
@@ -25,11 +25,12 @@
         <div id="pokedex_list" class="d_flex_wrap"></div>
 
         <div id="loading-spinner" class="d_none spinner"></div>
-        <button id="load-more">Load More</button>
+        <button id="load-more" onclick="loadPokemon()">Load More</button>
     </main>
 
     <div id="overlay" class="d_none"></div>
 
+    <script src="./scripts/templates.js"></script>
     <script src="./script.js"></script>
 </body>
 

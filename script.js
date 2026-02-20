@@ -10,7 +10,9 @@ async function loadPokemon() {
         const url = `https://pokeapi.co/api/v2/pokemon?offset=${currentOffset}&limit=${limit}`;
         const response = await fetch(url);
         const data = await response.json();
+        const startIndex = loadedPokemon.length;
         await fetchAllDetails(data.results);
+        renderList(startIndex);
         currentOffset += limit;
     } catch (error) {
         console.error("Error loading pokemon list", error);
@@ -55,3 +57,29 @@ function extractData(data) {
         stats: data.stats
     };
 }
+
+function renderList(newPokemonStartIndex) {
+    const container = document.getElementById('pokedex_list');
+    for (let i = newPokemonStartIndex; i < loadedPokemon.length; i++) {
+        const pokemon = loadedPokemon[i];
+        const name = capitalizeFirstLetter(pokemon.name);
+        const typesHTML = getTypesHTML(pokemon.types);
+        const typeClass = `bg-${pokemon.types[0].type.name}`;
+        container.innerHTML += getSmallCardHTML(
+            i, pokemon.id, name, pokemon.image, typeClass, typesHTML
+        );
+    }
+}
+
+function getTypesHTML(types) {
+    let html = '';
+    for (let i = 0; i < types.length; i++) {
+        html += getTypeBadgeHTML(types[i].type.name);
+    }
+    return html;
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
