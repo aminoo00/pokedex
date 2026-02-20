@@ -26,14 +26,14 @@ function setLoadingState(loading) {
 
 async function fetchAllDetails(results) {
     for (let i = 0; i < results.length; i++) {
-        const details = await fetchDetails(results[i].url);
+        const details = await fetchPokemonDetails(results[i].url);
         if (details) {
             loadedPokemon.push(details);
         }
     }
 }
 
-async function fetchDetails(url) {
+async function fetchPokemonDetails(url) {
     try {
         const response = await fetch(url);
         const data = await response.json();
