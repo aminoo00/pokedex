@@ -6,6 +6,11 @@ let isLoading = false;
 async function loadPokemon() {
     if (isLoading) return;
     setLoadingState(true);
+    await fetchAndRenderData();
+    setLoadingState(false);
+}
+
+async function fetchAndRenderData() {
     try {
         const url = `https://pokeapi.co/api/v2/pokemon?offset=${currentOffset}&limit=${limit}`;
         const response = await fetch(url);
@@ -14,10 +19,9 @@ async function loadPokemon() {
         await fetchAllDetails(data.results);
         renderList(startIndex);
         currentOffset += limit;
-    } catch (error) {
-        console.error("Error loading pokemon list", error);
+    } catch (e) {
+        console.error("Error", e);
     }
-    setLoadingState(false);
 }
 
 function setLoadingState(loading) {
@@ -125,9 +129,40 @@ function renderStatsTab(index) {
     content.innerHTML = getStatsTabHTML(getStatsHTML(pokemon.stats));
 }
 
-function renderEvoTab(index) {
+async function renderEvoTab(index) {
+    const pokemon = loadedPokemon[index];
     const content = document.getElementById('overlay_content');
-    content.innerHTML = "<p>Evolutions coming soon...</p>";
+    content.innerHTML = "<p>Loading...</p>";
+    if (!pokemon.evoChain) {
+        pokemon.evoChain = await fetchEvoChain(pokemon.name);
+    }
+    content.innerHTML = getEvoChainHTML(pokemon.evoChain);
+}
+
+async function fetchEvoChain(name) {
+    try {
+        const sRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+        const sData = await sRes.json();
+        const eRes = await fetch(sData.evolution_chain.url);
+        const eData = await eRes.json();
+        return parseEvoChain(eData.chain);
+    } catch (e) { return "Error loading evolution"; }
+}
+
+function parseEvoChain(chain) {
+    let evoStr = capitalizeFirstLetter(chain.species.name);
+    if (chain.evolves_to.length > 0) {
+        evoStr += getNextEvo(chain.evolves_to[0]);
+    }
+    return evoStr;
+}
+
+function getNextEvo(evoNode) {
+    let str = " -> " + capitalizeFirstLetter(evoNode.species.name);
+    if (evoNode.evolves_to.length > 0) {
+        str += " -> " + capitalizeFirstLetter(evoNode.evolves_to[0].species.name);
+    }
+    return str;
 }
 
 function getStatsHTML(stats) {
@@ -136,5 +171,37 @@ function getStatsHTML(stats) {
         html += `<p><strong>${stats[i].stat.name}:</strong> ${stats[i].base_stat}</p>`;
     }
     return html;
+}
+
+function searchPokemon() {
+    const input = document.getElementById('search-input').value.toLowerCase();
+    if (input.length > 0 && input.length < 3) return window.alert("Min 3 chars");
+    const container = document.getElementById('pokedex_list');
+    container.innerHTML = '';
+    if (input.length === 0) return renderList(0);
+    const matches = getMatches(input);
+    if (matches.length === 0) container.innerHTML = "<p>No Pokémon found</p>";
+    else renderMatches(matches, container);
+}
+
+function getMatches(input) {
+    const matches = [];
+    for (let i = 0; i < loadedPokemon.length; i++) {
+        if (loadedPokemon[i].name.includes(input)) {
+            matches.push(loadedPokemon[i]);
+        }
+    }
+    return matches;
+}
+
+function renderMatches(matches, container) {
+    for (let i = 0; i < matches.length; i++) {
+        const p = matches[i];
+        const idx = loadedPokemon.indexOf(p);
+        const typeClass = `bg-${p.types[0].type.name}`;
+        container.innerHTML += getSmallCardHTML(
+            idx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types)
+        );
+    }
 }
 

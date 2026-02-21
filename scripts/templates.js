@@ -56,3 +56,12 @@ function getMainTabHTML(height, weight, baseExp) {
     </div>
     `;
 }
+
+function getEvoChainHTML(evoString) {
+    return `
+    <div class="evo-tab">
+        <p><strong>Evolution Chain:</strong></p>
+        <p>${evoString}</p>
+    </div>
+    `;
+}
