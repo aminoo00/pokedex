@@ -1,0 +1,156 @@
+/* Overlay & Large Card */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.no_scroll {
+    overflow: hidden;
+}
+
+.large-card {
+    width: 90%;
+    max-width: 400px;
+    height: 80vh;
+    max-height: 600px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background-color: white;
+    /* fallback */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.large-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    color: white;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.large-card-header h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.large-card-image {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.large-card-image img {
+    height: 200px;
+    z-index: 2;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.large-card-tabs {
+    display: flex;
+    background-color: white;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    padding: 20px 20px 0 20px;
+    margin-top: -30px;
+    /* pull up over background */
+    z-index: 1;
+    position: relative;
+}
+
+.large-card-tabs button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.large-card-tabs button:hover,
+.large-card-tabs button.active {
+    color: black;
+    border-bottom: 2px solid #3366cc;
+}
+
+#overlay_content {
+    background-color: white;
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.main-tab p,
+.stats-tab p {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+/* Base structural CSS for small cards */
+.pokemon-card img {
+    width: 120px;
+    height: 120px;
+    margin: 10px 0;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    color: white;
+}
+
+.type-container {
+    display: flex;
+    gap: 5px;
+    margin-top: auto;
+}
+
+.type-badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.3);
+}

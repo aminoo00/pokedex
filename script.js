@@ -54,7 +54,8 @@ function extractData(data) {
         types: data.types,
         height: data.height,
         weight: data.weight,
-        stats: data.stats
+        stats: data.stats,
+        baseExp: data.base_experience
     };
 }
 
@@ -81,5 +82,59 @@ function getTypesHTML(types) {
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function openOverlay(index) {
+    const pokemon = loadedPokemon[index];
+    const name = capitalizeFirstLetter(pokemon.name);
+    const bgClass = `bg-${pokemon.types[0].type.name}`;
+    const overlay = document.getElementById('overlay');
+    overlay.innerHTML = getLargeCardHTML(index, name, pokemon.image, bgClass);
+    overlay.classList.remove('d_none');
+    document.body.classList.add('no_scroll');
+    renderMainTab(index);
+}
+
+function closeOverlay() {
+    const overlay = document.getElementById('overlay');
+    overlay.classList.add('d_none');
+    document.body.classList.remove('no_scroll');
+}
+
+function nextPokemon(index) {
+    if (index + 1 < loadedPokemon.length) {
+        openOverlay(index + 1);
+    }
+}
+
+function prevPokemon(index) {
+    if (index - 1 >= 0) {
+        openOverlay(index - 1);
+    }
+}
+
+function renderMainTab(index) {
+    const pokemon = loadedPokemon[index];
+    const content = document.getElementById('overlay_content');
+    content.innerHTML = getMainTabHTML(pokemon.height, pokemon.weight, pokemon.baseExp);
+}
+
+function renderStatsTab(index) {
+    const pokemon = loadedPokemon[index];
+    const content = document.getElementById('overlay_content');
+    content.innerHTML = getStatsTabHTML(getStatsHTML(pokemon.stats));
+}
+
+function renderEvoTab(index) {
+    const content = document.getElementById('overlay_content');
+    content.innerHTML = "<p>Evolutions coming soon...</p>";
+}
+
+function getStatsHTML(stats) {
+    let html = '';
+    for (let i = 0; i < stats.length; i++) {
+        html += `<p><strong>${stats[i].stat.name}:</strong> ${stats[i].base_stat}</p>`;
+    }
+    return html;
 }
 
