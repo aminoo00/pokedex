@@ -32,6 +32,7 @@ function setLoadingState(loading) {
 
 async function fetchAllDetails(results) {
     for (let i = 0; i < results.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50));
         const details = await fetchPokemonDetails(results[i].url);
         if (details) {
             loadedPokemon.push(details);
@@ -175,33 +176,30 @@ function getStatsHTML(stats) {
 
 function searchPokemon() {
     const input = document.getElementById('search-input').value.toLowerCase();
-    if (input.length > 0 && input.length < 3) return window.alert("Min 3 chars");
     const container = document.getElementById('pokedex_list');
+    if (input.length > 0 && input.length < 3) return window.alert("Min 3 chars");
     container.innerHTML = '';
     if (input.length === 0) return renderList(0);
-    const matches = getMatches(input);
-    if (matches.length === 0) container.innerHTML = "<p>No Pokémon found</p>";
-    else renderMatches(matches, container);
+    fetchAndRenderSingleSearch(input, container);
 }
 
-function getMatches(input) {
-    const matches = [];
-    for (let i = 0; i < loadedPokemon.length; i++) {
-        if (loadedPokemon[i].name.includes(input)) {
-            matches.push(loadedPokemon[i]);
-        }
-    }
-    return matches;
-}
-
-function renderMatches(matches, container) {
-    for (let i = 0; i < matches.length; i++) {
-        const p = matches[i];
-        const idx = loadedPokemon.indexOf(p);
+async function fetchAndRenderSingleSearch(input, container) {
+    setLoadingState(true);
+    try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${input}`);
+        if (!res.ok) throw new Error("Not found");
+        const data = await res.json();
+        const p = extractData(data);
+        loadedPokemon.push(p);
+        const idx = loadedPokemon.length - 1;
         const typeClass = `bg-${p.types[0].type.name}`;
-        container.innerHTML += getSmallCardHTML(
+        container.innerHTML = getSmallCardHTML(
             idx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types)
         );
+    } catch (e) {
+        container.innerHTML = "<p>No Pokémon found</p>";
     }
+    setLoadingState(false);
 }
 
+loadPokemon();
