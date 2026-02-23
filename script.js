@@ -177,7 +177,7 @@ function getStatsHTML(stats) {
 function searchPokemon() {
     const input = document.getElementById('search-input').value.toLowerCase();
     const container = document.getElementById('pokedex_list');
-    if (input.length > 0 && input.length < 3) return window.alert("Min 3 chars");
+    if (input.length > 0 && input.length < 3) return;
     container.innerHTML = '';
     if (input.length === 0) return renderList(0);
     fetchAndRenderSingleSearch(input, container);
