@@ -174,13 +174,28 @@ function getStatsHTML(stats) {
     return html;
 }
 
-function searchPokemon() {
-    const input = document.getElementById('search-input').value.toLowerCase();
-    const container = document.getElementById('pokedex_list');
+async function searchPokemon() {
+    // Dynamically grab the input regardless of what ID it has
+    const inputEl = document.querySelector('header input');
+    if (!inputEl) return;
+    const input = inputEl.value.trim().toLowerCase();
+
+    // Silent return for 1 or 2 characters
     if (input.length > 0 && input.length < 3) return;
+
+    const container = document.getElementById('pokedex_list');
+    const loadBtn = document.getElementById('load-more') || document.querySelector('main > button');
     container.innerHTML = '';
-    if (input.length === 0) return renderList(0);
-    fetchAndRenderSingleSearch(input, container);
+
+    // If empty, show the normal list and the load button
+    if (input.length === 0) {
+        if (loadBtn) loadBtn.style.display = 'block';
+        return renderList(0);
+    }
+
+    // If searching, hide the load button and fetch
+    if (loadBtn) loadBtn.style.display = 'none';
+    await fetchAndRenderSingleSearch(input, container);
 }
 
 async function fetchAndRenderSingleSearch(input, container) {

@@ -159,3 +159,28 @@ header .logo h1 {
         margin: 0 15px;
     }
 }
+
+/* --- Structural UI Fixes --- */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Forces body to take full screen height */
+    margin: 0;
+}
+
+main {
+    flex-grow: 1;
+    /* Pushes the footer to the bottom */
+    padding-bottom: 40px;
+}
+
+.main_footer {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #333333;
+    padding: 20px 40px;
+    margin-top: auto;
+    /* Ensures it stays at the bottom */
+    color: white;
+}
