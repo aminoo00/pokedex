@@ -19,7 +19,7 @@ function getTypeBadgeHTML(typeName) {
 
 function getLargeCardHTML(index, name, img, bgClass) {
     return `
-    <div class="large-card ${bgClass}">
+    <div class="large-card ${bgClass}" onclick="event.stopPropagation()">
         <div class="large-card-header">
             <button class="close-btn" onclick="closeOverlay()">X</button>
             <h2>${name}</h2>
@@ -57,11 +57,23 @@ function getMainTabHTML(height, weight, baseExp) {
     `;
 }
 
-function getEvoChainHTML(evoString) {
-    return `
-    <div class="evo-tab">
-        <p><strong>Evolution Chain:</strong></p>
-        <p>${evoString}</p>
-    </div>
-    `;
+function getEvoChainHTML(evoArray) {
+    if (!evoArray || evoArray.length === 0) {
+        return `<div class="evo-tab"><p>No evolution chain available.</p></div>`;
+    }
+
+    let html = `<div class="evo-tab"><div class="evo-chain-container">`;
+    for (let i = 0; i < evoArray.length; i++) {
+        html += `
+            <div class="evo-item">
+                <img src="${evoArray[i].img}" alt="${evoArray[i].name}">
+                <span>${evoArray[i].name}</span>
+            </div>
+        `;
+        if (i < evoArray.length - 1) {
+            html += `<div class="evo-arrow">&raquo;</div>`;
+        }
+    }
+    html += `</div></div>`;
+    return html;
 }

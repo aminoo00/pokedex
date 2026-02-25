@@ -27,8 +27,32 @@ async function fetchAndRenderData() {
 
 function setLoadingState(loading) {
     isLoading = loading;
+    if (loading) showLoadingState();
+    else hideLoadingState();
+}
+
+function showLoadingState() {
     const btn = document.getElementById('load-more');
-    if (btn) btn.disabled = loading;
+    const globalOverlay = document.getElementById('global-loading-overlay');
+    const inlineSpinner = document.getElementById('loading-spinner');
+    // determine if this is the initial load
+    const isInitialLoad = loadedPokemon.length === 0;
+
+    if (isInitialLoad && globalOverlay) {
+        globalOverlay.classList.remove('d_none');
+    } else {
+        if (btn) btn.style.display = 'none';
+        if (inlineSpinner) inlineSpinner.classList.remove('d_none');
+    }
+}
+
+function hideLoadingState() {
+    const btn = document.getElementById('load-more');
+    const globalOverlay = document.getElementById('global-loading-overlay');
+    const inlineSpinner = document.getElementById('loading-spinner');
+    if (globalOverlay) globalOverlay.classList.add('d_none');
+    if (inlineSpinner) inlineSpinner.classList.add('d_none');
+    if (btn) btn.style.display = 'block';
 }
 
 async function fetchAllDetails(results) {
@@ -143,28 +167,43 @@ async function renderEvoTab(index) {
 
 async function fetchEvoChain(name) {
     try {
-        const sRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
-        const sData = await sRes.json();
-        const eRes = await fetch(sData.evolution_chain.url);
-        const eData = await eRes.json();
-        return parseEvoChain(eData.chain);
-    } catch (e) { return "Error loading evolution"; }
+        const chainData = await fetchChainData(name);
+        const evoNames = parseEvoChainNames(chainData);
+        return await fetchEvoDetails(evoNames);
+    } catch (e) { return null; }
 }
 
-function parseEvoChain(chain) {
-    let evoStr = capitalizeFirstLetter(chain.species.name);
+async function fetchChainData(name) {
+    const sRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+    const sData = await sRes.json();
+    const eRes = await fetch(sData.evolution_chain.url);
+    const eData = await eRes.json();
+    return eData.chain;
+}
+
+async function fetchEvoDetails(evoNames) {
+    const evoDetails = [];
+    for (let i = 0; i < evoNames.length; i++) {
+        const pRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${evoNames[i].toLowerCase()}`);
+        const pData = await pRes.json();
+        evoDetails.push({
+            name: capitalizeFirstLetter(pData.name),
+            img: pData.sprites.other['official-artwork'].front_default
+        });
+    }
+    return evoDetails;
+}
+
+function parseEvoChainNames(chain) {
+    let evoNodes = [];
+    evoNodes.push(chain.species.name);
     if (chain.evolves_to.length > 0) {
-        evoStr += getNextEvo(chain.evolves_to[0]);
+        evoNodes.push(chain.evolves_to[0].species.name);
+        if (chain.evolves_to[0].evolves_to.length > 0) {
+            evoNodes.push(chain.evolves_to[0].evolves_to[0].species.name);
+        }
     }
-    return evoStr;
-}
-
-function getNextEvo(evoNode) {
-    let str = " -> " + capitalizeFirstLetter(evoNode.species.name);
-    if (evoNode.evolves_to.length > 0) {
-        str += " -> " + capitalizeFirstLetter(evoNode.evolves_to[0].species.name);
-    }
-    return str;
+    return evoNodes;
 }
 
 function getStatsHTML(stats) {
@@ -180,9 +219,14 @@ async function searchPokemon() {
     if (!inputEl) return;
     const input = inputEl.value.trim().toLowerCase();
     if (input.length > 0 && input.length < 3) return;
+    handleSearchState(input);
+}
+
+async function handleSearchState(input) {
     const container = document.getElementById('pokedex_list');
     const loadBtn = document.getElementById('load-more') || document.querySelector('main > button');
     container.innerHTML = '';
+
     if (input.length === 0) {
         if (loadBtn) loadBtn.style.display = 'block';
         return renderList(0);
