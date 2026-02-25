@@ -1,3 +1,4 @@
+let allPokemonList = [];
 let loadedPokemon = [];
 let currentOffset = 0;
 const limit = 20;
@@ -175,46 +176,56 @@ function getStatsHTML(stats) {
 }
 
 async function searchPokemon() {
-    // Dynamically grab the input regardless of what ID it has
     const inputEl = document.querySelector('header input');
     if (!inputEl) return;
     const input = inputEl.value.trim().toLowerCase();
-
-    // Silent return for 1 or 2 characters
     if (input.length > 0 && input.length < 3) return;
-
     const container = document.getElementById('pokedex_list');
     const loadBtn = document.getElementById('load-more') || document.querySelector('main > button');
     container.innerHTML = '';
-
-    // If empty, show the normal list and the load button
     if (input.length === 0) {
         if (loadBtn) loadBtn.style.display = 'block';
         return renderList(0);
     }
-
-    // If searching, hide the load button and fetch
     if (loadBtn) loadBtn.style.display = 'none';
-    await fetchAndRenderSingleSearch(input, container);
+    await initGlobalSearch(input, container);
 }
 
-async function fetchAndRenderSingleSearch(input, container) {
+async function initGlobalSearch(input, container) {
     setLoadingState(true);
-    try {
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${input}`);
-        if (!res.ok) throw new Error("Not found");
+    if (allPokemonList.length === 0) {
+        const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
         const data = await res.json();
-        const p = extractData(data);
-        loadedPokemon.push(p);
-        const idx = loadedPokemon.length - 1;
-        const typeClass = `bg-${p.types[0].type.name}`;
-        container.innerHTML = getSmallCardHTML(
-            idx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types)
-        );
-    } catch (e) {
-        container.innerHTML = "<p>No Pokémon found</p>";
+        allPokemonList = data.results;
     }
+    const matches = getGlobalMatches(input);
+    if (matches.length === 0) container.innerHTML = "<p>No match found.</p>";
+    else await renderGlobalMatches(matches, container);
     setLoadingState(false);
+}
+
+function getGlobalMatches(input) {
+    const matches = [];
+    for (let i = 0; i < allPokemonList.length; i++) {
+        if (allPokemonList[i].name.includes(input)) {
+            matches.push(allPokemonList[i]);
+        }
+    }
+    return matches;
+}
+
+async function renderGlobalMatches(matches, container) {
+    const max = matches.length > 20 ? 20 : matches.length;
+    for (let i = 0; i < max; i++) {
+        await new Promise(r => setTimeout(r, 50));
+        const p = await fetchPokemonDetails(matches[i].url);
+        if (p) {
+            const tempIdx = loadedPokemon.length;
+            loadedPokemon.push(p);
+            const typeClass = `bg-${p.types[0].type.name}`;
+            container.innerHTML += getSmallCardHTML(tempIdx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types));
+        }
+    }
 }
 
 loadPokemon();
