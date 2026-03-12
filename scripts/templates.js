@@ -17,7 +17,9 @@ function getTypeBadgeHTML(typeName) {
     return `<span class="type-badge badge-${typeName}">${typeName}</span>`;
 }
 
-function getLargeCardHTML(index, name, img, bgClass) {
+function getLargeCardHTML(index, name, img, bgClass, hidePrev, hideNext) {
+    const prevStyle = hidePrev ? 'style="visibility:hidden"' : '';
+    const nextStyle = hideNext ? 'style="visibility:hidden"' : '';
     return `
     <div class="large-card ${bgClass}" onclick="event.stopPropagation()">
         <div class="large-card-header">
@@ -25,9 +27,9 @@ function getLargeCardHTML(index, name, img, bgClass) {
             <h2>${name}</h2>
         </div>
         <div class="large-card-image">
-            <button class="nav-btn prev" onclick="prevPokemon(${index})">&lt;</button>
+            <button class="nav-btn prev" ${prevStyle} onclick="prevPokemon(${index})">&lt;</button>
             <img src="${img}" alt="${name}">
-            <button class="nav-btn next" onclick="nextPokemon(${index})">&gt;</button>
+            <button class="nav-btn next" ${nextStyle} onclick="nextPokemon(${index})">&gt;</button>
         </div>
         <div class="large-card-tabs">
             <button onclick="renderMainTab(${index})">Main</button>

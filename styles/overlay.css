@@ -192,3 +192,54 @@
     color: #666;
     margin-top: -20px;
 }
+
+@media (max-width: 480px) {
+    .large-card {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .large-card-image img {
+        height: 150px;
+    }
+
+    .large-card-header {
+        padding: 15px;
+    }
+
+    .large-card-header h2 {
+        font-size: 22px;
+    }
+
+    .nav-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+
+    .large-card-image {
+        padding: 10px;
+    }
+
+    .large-card-tabs {
+        padding: 15px 15px 0 15px;
+    }
+
+    .large-card-tabs button {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .evo-chain-container {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .evo-item img {
+        width: 50px;
+        height: 50px;
+    }
+}

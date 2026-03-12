@@ -18,12 +18,14 @@
         <p>...Loading</p>
     </div>
     <header>
-        <div class="logo">
-            <img src="./assets/icons/pokeball-icon.png" alt="Pokeball" class="logo-icon">
-            <h1>Pokédex</h1>
-        </div>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search Pokémon..." onkeyup="searchPokemon()">
+        <div class="header-inner">
+            <div class="logo">
+                <img src="./assets/icons/pokeball-icon.png" alt="Pokeball" class="logo-icon">
+                <h1>Pokédex</h1>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search Pokémon..." onkeyup="searchPokemon()">
+            </div>
         </div>
     </header>
 
@@ -34,8 +36,6 @@
         <button id="load-more" onclick="loadPokemon()">Load More</button>
     </main>
 
-    <div id="overlay" class="d_none" onclick="closeOverlay()"></div>
-
     <footer class="main_footer">
         <div class="footer_content_row">
             <span class="footer_copy">© 2026 Pokédex Project</span>
@@ -45,6 +45,8 @@
             </div>
         </div>
     </footer>
+
+    <div id="overlay" class="d_none" onclick="closeOverlay()"></div>
 
     <script src="./scripts/templates.js"></script>
     <script src="./script.js"></script>

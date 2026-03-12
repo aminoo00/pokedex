@@ -1,8 +1,10 @@
 let allPokemonList = [];
 let loadedPokemon = [];
+let searchResults = [];
 let currentOffset = 0;
 const limit = 20;
 let isLoading = false;
+let paginatedCount = 0;
 
 async function loadPokemon() {
     if (isLoading) return;
@@ -18,6 +20,7 @@ async function fetchAndRenderData() {
         const data = await response.json();
         const startIndex = loadedPokemon.length;
         await fetchAllDetails(data.results);
+        paginatedCount = loadedPokemon.length;
         renderList(startIndex);
         currentOffset += limit;
     } catch (e) {
@@ -119,7 +122,9 @@ function openOverlay(index) {
     const name = capitalizeFirstLetter(pokemon.name);
     const bgClass = `bg-${pokemon.types[0].type.name}`;
     const overlay = document.getElementById('overlay');
-    overlay.innerHTML = getLargeCardHTML(index, name, pokemon.image, bgClass);
+    const hidePrev = index === 0;
+    const hideNext = index + 1 >= loadedPokemon.length;
+    overlay.innerHTML = getLargeCardHTML(index, name, pokemon.image, bgClass, hidePrev, hideNext);
     overlay.classList.remove('d_none');
     document.body.classList.add('no_scroll');
     renderMainTab(index);
@@ -228,6 +233,8 @@ async function handleSearchState(input) {
     container.innerHTML = '';
 
     if (input.length === 0) {
+        loadedPokemon.length = paginatedCount;
+        searchResults = [];
         if (loadBtn) loadBtn.style.display = 'block';
         return renderList(0);
     }
@@ -259,15 +266,17 @@ function getGlobalMatches(input) {
 }
 
 async function renderGlobalMatches(matches, container) {
+    searchResults = [];
     const max = matches.length > 20 ? 20 : matches.length;
     for (let i = 0; i < max; i++) {
         await new Promise(r => setTimeout(r, 50));
         const p = await fetchPokemonDetails(matches[i].url);
         if (p) {
-            const tempIdx = loadedPokemon.length;
-            loadedPokemon.push(p);
+            searchResults.push(p);
+            const searchIdx = paginatedCount + searchResults.length - 1;
+            loadedPokemon[searchIdx] = p;
             const typeClass = `bg-${p.types[0].type.name}`;
-            container.innerHTML += getSmallCardHTML(tempIdx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types));
+            container.innerHTML += getSmallCardHTML(searchIdx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types));
         }
     }
 }
