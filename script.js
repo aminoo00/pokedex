@@ -5,6 +5,7 @@ let currentOffset = 0;
 const limit = 20;
 let isLoading = false;
 let paginatedCount = 0;
+let isSearchMode = false;
 
 async function loadPokemon() {
     if (isLoading) return;
@@ -38,7 +39,6 @@ function showLoadingState() {
     const btn = document.getElementById('load-more');
     const globalOverlay = document.getElementById('global-loading-overlay');
     const inlineSpinner = document.getElementById('loading-spinner');
-    // determine if this is the initial load
     const isInitialLoad = loadedPokemon.length === 0;
 
     if (isInitialLoad && globalOverlay) {
@@ -55,7 +55,7 @@ function hideLoadingState() {
     const inlineSpinner = document.getElementById('loading-spinner');
     if (globalOverlay) globalOverlay.classList.add('d_none');
     if (inlineSpinner) inlineSpinner.classList.add('d_none');
-    if (btn) btn.style.display = 'block';
+    if (btn && !isSearchMode) btn.style.display = 'block';
 }
 
 async function fetchAllDetails(results) {
@@ -118,12 +118,25 @@ function capitalizeFirstLetter(string) {
 }
 
 function openOverlay(index) {
-    const pokemon = loadedPokemon[index];
+    let pokemon;
+    if (isSearchMode) {
+        pokemon = searchResults[index];
+    } else {
+        pokemon = loadedPokemon[index];
+    }
+
     const name = capitalizeFirstLetter(pokemon.name);
     const bgClass = `bg-${pokemon.types[0].type.name}`;
     const overlay = document.getElementById('overlay');
+
     const hidePrev = index === 0;
-    const hideNext = index + 1 >= loadedPokemon.length;
+    let hideNext;
+    if (isSearchMode) {
+        hideNext = index + 1 >= searchResults.length;
+    } else {
+        hideNext = index + 1 >= loadedPokemon.length;
+    }
+
     overlay.innerHTML = getLargeCardHTML(index, name, pokemon.image, bgClass, hidePrev, hideNext);
     overlay.classList.remove('d_none');
     document.body.classList.add('no_scroll');
@@ -137,7 +150,14 @@ function closeOverlay() {
 }
 
 function nextPokemon(index) {
-    if (index + 1 < loadedPokemon.length) {
+    let list;
+    if (isSearchMode) {
+        list = searchResults;
+    } else {
+        list = loadedPokemon;
+    }
+
+    if (index + 1 < list.length) {
         openOverlay(index + 1);
     }
 }
@@ -149,19 +169,34 @@ function prevPokemon(index) {
 }
 
 function renderMainTab(index) {
-    const pokemon = loadedPokemon[index];
+    let pokemon;
+    if (isSearchMode) {
+        pokemon = searchResults[index];
+    } else {
+        pokemon = loadedPokemon[index];
+    }
     const content = document.getElementById('overlay_content');
     content.innerHTML = getMainTabHTML(pokemon.height, pokemon.weight, pokemon.baseExp);
 }
 
 function renderStatsTab(index) {
-    const pokemon = loadedPokemon[index];
+    let pokemon;
+    if (isSearchMode) {
+        pokemon = searchResults[index];
+    } else {
+        pokemon = loadedPokemon[index];
+    }
     const content = document.getElementById('overlay_content');
     content.innerHTML = getStatsTabHTML(getStatsHTML(pokemon.stats));
 }
 
 async function renderEvoTab(index) {
-    const pokemon = loadedPokemon[index];
+    let pokemon;
+    if (isSearchMode) {
+        pokemon = searchResults[index];
+    } else {
+        pokemon = loadedPokemon[index];
+    }
     const content = document.getElementById('overlay_content');
     content.innerHTML = "<p>Loading...</p>";
     if (!pokemon.evoChain) {
@@ -233,11 +268,12 @@ async function handleSearchState(input) {
     container.innerHTML = '';
 
     if (input.length === 0) {
-        loadedPokemon.length = paginatedCount;
+        isSearchMode = false;
         searchResults = [];
         if (loadBtn) loadBtn.style.display = 'block';
         return renderList(0);
     }
+    isSearchMode = true;
     if (loadBtn) loadBtn.style.display = 'none';
     await initGlobalSearch(input, container);
 }
@@ -250,8 +286,11 @@ async function initGlobalSearch(input, container) {
         allPokemonList = data.results;
     }
     const matches = getGlobalMatches(input);
-    if (matches.length === 0) container.innerHTML = "<p>No match found.</p>";
-    else await renderGlobalMatches(matches, container);
+    if (matches.length === 0) {
+        container.innerHTML = "<p>No match found.</p>";
+    } else {
+        await renderGlobalMatches(input, matches, container);
+    }
     setLoadingState(false);
 }
 
@@ -265,18 +304,22 @@ function getGlobalMatches(input) {
     return matches;
 }
 
-async function renderGlobalMatches(matches, container) {
+async function renderGlobalMatches(input, matches, container) {
     searchResults = [];
     const max = matches.length > 20 ? 20 : matches.length;
     for (let i = 0; i < max; i++) {
+        const currentInput = document.querySelector('header input').value.trim().toLowerCase();
+        if (currentInput !== input) {
+            return;
+        }
+
         await new Promise(r => setTimeout(r, 50));
         const p = await fetchPokemonDetails(matches[i].url);
         if (p) {
             searchResults.push(p);
-            const searchIdx = paginatedCount + searchResults.length - 1;
-            loadedPokemon[searchIdx] = p;
+            const index = searchResults.length - 1;
             const typeClass = `bg-${p.types[0].type.name}`;
-            container.innerHTML += getSmallCardHTML(searchIdx, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types));
+            container.innerHTML += getSmallCardHTML(index, p.id, capitalizeFirstLetter(p.name), p.image, typeClass, getTypesHTML(p.types));
         }
     }
 }
